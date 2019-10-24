@@ -10,5 +10,6 @@ Echinus provides a fast & easy way to summarise transcript compatibility counts 
 
 ```go
 echinus -tcc matrix.tcc.mtx -ecmap matrix.ec \
-        -txnames transcripts.txt -genemap transcript_to_gene.txt -output echinus_dir/
+        -txnames transcripts.txt -genemap transcripts_to_genes.txt \
+        -output echinus_dir
 ```
