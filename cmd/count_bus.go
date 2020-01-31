@@ -22,6 +22,7 @@ var cellsFile string
 // var outputFile string
 var outputDir string
 var includeMultigeneECs bool
+var calcReadCount bool
 
 func init() {
 	// Sorted BUS file with corrected barcodes (output.correct.sort.bus)
@@ -45,6 +46,8 @@ func init() {
 	// Define boolean flags
 	// Note: currently only unique mappers are used to calculate gene abundances
 	countCmd.Flags().BoolVarP(&includeMultigeneECs, "multimapping", "m", false, "Include bus records that pseudoalign to multiple genes")
+	// Count reads rather than molecules
+	countCmd.Flags().BoolVarP(&calcReadCount, "reads", "r", false, "Count reads instead of unique molecules")
 
 	rootCmd.AddCommand(countCmd)
 }
@@ -141,6 +144,7 @@ func index(xs []string, x string) int {
 	return -1
 }
 
+// Count molecules or reads for every cell and every gene in the BUS file
 func Count(busFile string) {
 
 	// Read input files
@@ -174,9 +178,9 @@ func Count(busFile string) {
 	ecGeneMap := make(map[int32][]string)
 
 	// Define structure for counts
-	cellGeneCounts := make([][]int, len(cells))
+	cellGeneCounts := make([][]uint32, len(cells))
 	for cell := range cellGeneCounts {
-		cellGeneCounts[cell] = make([]int, len(genes))
+		cellGeneCounts[cell] = make([]uint32, len(genes))
 	}
 
 	for ecScanner.Scan() {
@@ -226,7 +230,7 @@ func Count(busFile string) {
 	// Read BUS data
 	var data BUSData
 	var lineIndex int
-	var nCounts int
+	var nCounts uint64
 
 	// Count TCCs for every gene in every cell
 	for {
@@ -245,9 +249,15 @@ func Count(busFile string) {
 			// Note: this only works when a single gene corresponds to a single EC
 			// TODO: implement counting with multi-mapping reads
 			geneInt := index(genes, gene[0])
-			// TODO: add an option to add up counts
-			cellGeneCounts[cellInt][geneInt]++
-			nCounts++
+
+			// Consider an option to add up counts
+			if calcReadCount {
+				cellGeneCounts[cellInt][geneInt] += data.Count
+				nCounts += uint64(data.Count)
+			} else {
+				cellGeneCounts[cellInt][geneInt]++
+				nCounts++
+			}
 		}
 		lineIndex++
 		fmt.Printf("\rProcessed line %d, recorded %d counts", lineIndex, nCounts)
@@ -286,7 +296,7 @@ func Count(busFile string) {
 	var count int
 	for cellIndex := range cells {
 		for geneIndex := range genes {
-			count = cellGeneCounts[cellIndex][geneIndex]
+			count = int(cellGeneCounts[cellIndex][geneIndex])
 			if count > 0 {
 				_, err = mtx.WriteString(strconv.Itoa(cellIndex+1) + "\t" + strconv.Itoa(geneIndex+1) + "\t" + strconv.Itoa(count) + "\n")
 				if err != nil {
