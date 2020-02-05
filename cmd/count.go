@@ -280,7 +280,7 @@ func CountBus(busFile string) {
 
 	// Create output dir if does not exist
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
-		os.Mkdir(outputDir, os.ModeDir)
+		os.Mkdir(outputDir, 0700)
 	}
 
 	// Save the matrix file
@@ -494,7 +494,7 @@ func CountMtx(tccFile string) {
 
 	// Create output dir if does not exist
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
-		os.Mkdir(outputDir, os.ModeDir)
+		os.Mkdir(outputDir, 0700)
 	}
 
 	// Save the matrix file
