@@ -277,6 +277,7 @@ func CountBus(busFile string) {
 		lineIndex++
 		fmt.Printf("\rProcessed line %d, recorded %d counts", lineIndex, nCounts)
 	}
+	fmt.Printf("\n")
 
 	// Create output dir if does not exist
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
@@ -491,6 +492,7 @@ func CountMtx(tccFile string) {
 		lineIndex++
 		fmt.Printf("\rProcessed line %d, recorded %d counts", lineIndex, nCounts)
 	}
+	fmt.Printf("\n")
 
 	// Create output dir if does not exist
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
