@@ -134,6 +134,34 @@ func unique(xs []string) (uniq []string) {
 	return
 }
 
+// Return a unique subset of the string slice provided, with unique elements indices.
+func uniqueWithIndices(xs []string) (uniq []string, uniqIndices []int) {
+	uniq = make([]string, 0, len(xs))
+	uniqIndices = make([]int, 0, len(xs))
+	seen := make(map[string]bool)
+
+	for i, val := range xs {
+		if _, ok := seen[val]; !ok {
+			seen[val] = true
+			uniq = append(uniq, val)
+			uniqIndices = append(uniqIndices, i)
+		}
+	}
+
+	return
+}
+
+// Return a subset of the string slice provided using provided indices.
+func subset(xs []string, uniqIndices []int) (uniq []string) {
+	uniq = make([]string, 0, len(xs))
+
+	for _, val := range uniqIndices {
+		uniq = append(uniq, xs[val])
+	}
+
+	return
+}
+
 func convertTrxToGenes(ts []int, trx []string, geneMap map[string][]string) (gs []string) {
 	for _, ti := range ts {
 		gs = append(gs, geneMap[trx[ti]][1])
@@ -178,11 +206,15 @@ func CountBus(busFile string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var geneIDs []string
+	var geneIndices []int
 	var genes []string
 	for _, v := range geneMap {
+		geneIDs = append(geneIDs, v[0])
 		genes = append(genes, v[1])
 	}
-	genes = unique(genes)
+	geneIDs, geneIndices = uniqueWithIndices(geneIDs)
+	genes = subset(genes, geneIndices)
 
 	cells, err := readPlainFile(cellsFile)
 	if err != nil {
@@ -352,8 +384,8 @@ func CountBus(busFile string) {
 	defer outGenesTSV.Close()
 	genesTSV := bufio.NewWriter(outGenesTSV)
 
-	for _, geneName := range genes {
-		_, err = genesTSV.WriteString(geneName + "\n")
+	for i, geneName := range genes {
+		_, err = genesTSV.WriteString(geneIDs[i] + "\t" + geneName + "\n")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -380,11 +412,15 @@ func CountMtx(tccFile string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var geneIDs []string
+	var geneIndices []int
 	var genes []string
 	for _, v := range geneMap {
-		genes = append(genes, v[0])
+		geneIDs = append(geneIDs, v[0])
+		genes = append(genes, v[1])
 	}
-	genes = unique(genes)
+	geneIDs, geneIndices = uniqueWithIndices(geneIDs)
+	genes = subset(genes, geneIndices)
 
 	cells, err := readPlainFile(cellsFile)
 	if err != nil {
@@ -416,11 +452,11 @@ func CountMtx(tccFile string) {
 
 		// Create EC to gene mapping
 		if includeMultigeneECs {
-			ecGenes := convertTrxToGenes2col(ecTrx, txNames, geneMap)
+			ecGenes := convertTrxToGenes(ecTrx, txNames, geneMap)
 			ecGeneMap[ecIndex] = ecGenes
 		} else {
 			if len(ecTrx) == 1 {
-				ecGenes := convertTrxToGenes2col(ecTrx, txNames, geneMap)
+				ecGenes := convertTrxToGenes(ecTrx, txNames, geneMap)
 				ecGeneMap[ecIndex] = ecGenes
 			}
 		}
@@ -567,8 +603,8 @@ func CountMtx(tccFile string) {
 	defer outGenesTSV.Close()
 	genesTSV := bufio.NewWriter(outGenesTSV)
 
-	for _, geneName := range genes {
-		_, err = genesTSV.WriteString(geneName + "\n")
+	for i, geneName := range genes {
+		_, err = genesTSV.WriteString(geneIDs[i] + "\t" + geneName + "\n")
 		if err != nil {
 			log.Fatal(err)
 		}
