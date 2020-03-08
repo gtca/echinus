@@ -341,17 +341,19 @@ func CountBus(busFile string) {
 		log.Fatal(err)
 	}
 
-	_, err = mtx.WriteString(strconv.Itoa(len(cells)) + "\t" + strconv.Itoa(len(genes)) + "\t" + strconv.Itoa(nElements) + "\n")
+	_, err = mtx.WriteString(strconv.Itoa(len(genes)) + "\t" + strconv.Itoa(len(cells)) + "\t" + strconv.Itoa(nElements) + "\n")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var count int
+	var cellCounts []uint32
 	for cellIndex := range cells {
+		cellCounts = cellGeneCounts[cellIndex]
 		for geneIndex := range genes {
-			count = int(cellGeneCounts[cellIndex][geneIndex])
+			count = int(cellCounts[geneIndex])
 			if count > 0 {
-				_, err = mtx.WriteString(strconv.Itoa(cellIndex+1) + "\t" + strconv.Itoa(geneIndex+1) + "\t" + strconv.Itoa(count) + "\n")
+				_, err = mtx.WriteString(strconv.Itoa(geneIndex+1) + "\t" + strconv.Itoa(cellIndex+1) + "\t" + strconv.Itoa(count) + "\n")
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -560,17 +562,19 @@ func CountMtx(tccFile string) {
 		log.Fatal(err)
 	}
 
-	_, err = mtx.WriteString(strconv.Itoa(len(cells)) + "\t" + strconv.Itoa(len(genes)) + "\t" + strconv.Itoa(nElements) + "\n")
+	_, err = mtx.WriteString(strconv.Itoa(len(genes)) + "\t" + strconv.Itoa(len(cells)) + "\t" + strconv.Itoa(nElements) + "\n")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var count int
+	var cellCounts []uint32
 	for cellIndex := range cells {
+		cellCounts = cellGeneCounts[cellIndex]
 		for geneIndex := range genes {
-			count = int(cellGeneCounts[cellIndex][geneIndex])
+			count = int(cellCounts[geneIndex])
 			if count > 0 {
-				_, err = mtx.WriteString(strconv.Itoa(cellIndex+1) + "\t" + strconv.Itoa(geneIndex+1) + "\t" + strconv.Itoa(count) + "\n")
+				_, err = mtx.WriteString(strconv.Itoa(geneIndex+1) + "\t" + strconv.Itoa(cellIndex+1) + "\t" + strconv.Itoa(count) + "\n")
 				if err != nil {
 					log.Fatal(err)
 				}
